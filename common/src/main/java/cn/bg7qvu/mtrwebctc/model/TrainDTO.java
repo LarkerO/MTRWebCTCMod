@@ -35,6 +35,30 @@ public class TrainDTO {
     private int segmentCategory;
     private double progress;
     
+    /**
+     * 列车位置记录
+     */
+    public static class Position {
+        public final long timestamp;
+        public final double x;
+        public final double y;
+        public final double z;
+        
+        public Position(double x, double y, double z) {
+            this.timestamp = System.currentTimeMillis();
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+        
+        public Position(long timestamp, double x, double y, double z) {
+            this.timestamp = timestamp;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+    
     // Getters and Setters
     public String getTrainId() {
         return trainId;

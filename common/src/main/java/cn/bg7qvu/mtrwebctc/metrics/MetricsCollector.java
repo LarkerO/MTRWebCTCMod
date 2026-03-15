@@ -1,201 +1,171 @@
 package cn.bg7qvu.mtrwebctc.metrics;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import cn.bg7qvu.mtrwebctc.util.Logger;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 指标收集器
- * 收集 API 请求、错误、延迟等指标
+ * 用于收集和暴露应用指标
  */
 public class MetricsCollector {
-    // 请求计数器
-    private final AtomicLong totalRequests = new AtomicLong(0);
-    private final AtomicLong successRequests = new AtomicLong(0);
-    private final AtomicLong failedRequests = new AtomicLong(0);
+    private final Map<String, AtomicLong> counters = new ConcurrentHashMap<>();
+    private final Map<String, Long> gauges = new ConcurrentHashMap<>();
+    private final Map<String, Long> timers = new ConcurrentHashMap<>();
     
-    // 端点统计
-    private final Map<String, EndpointStats> endpointStats = new ConcurrentHashMap<>();
-    
-    // 响应时间分布
-    private final Map<String, AtomicLong> responseTimeBuckets = new ConcurrentHashMap<>();
-    
-    // 错误计数
-    private final Map<Integer, AtomicLong> errorCodes = new ConcurrentHashMap<>();
-    
-    // WebSocket 连接数
-    private final AtomicInteger wsConnections = new AtomicInteger(0);
-    
-    // 启动时间
-    private final long startTime = System.currentTimeMillis();
-    
-    // 响应时间桶边界（毫秒）
-    private static final long[] TIME_BUCKETS = {10, 50, 100, 250, 500, 1000, 2500, 5000, 10000};
-    private static final String[] BUCKET_NAMES = {"10ms", "50ms", "100ms", "250ms", "500ms", "1s", "2.5s", "5s", "10s", ">10s"};
+    private long startTime = System.currentTimeMillis();
     
     /**
-     * 记录请求
+     * 增加计数器
+     * @param name 计数器名称
      */
-    public void recordRequest(String endpoint, String method, int statusCode, long durationMs) {
-        totalRequests.incrementAndGet();
-        
-        if (statusCode >= 200 && statusCode < 400) {
-            successRequests.incrementAndGet();
-        } else {
-            failedRequests.incrementAndGet();
-            errorCodes.computeIfAbsent(statusCode, k -> new AtomicLong(0)).incrementAndGet();
-        }
-        
-        // 端点统计
-        String key = method + " " + endpoint;
-        endpointStats.computeIfAbsent(key, k -> new EndpointStats()).record(statusCode, durationMs);
-        
-        // 响应时间分布
-        String bucket = getBucket(durationMs);
-        responseTimeBuckets.computeIfAbsent(bucket, k -> new AtomicLong(0)).incrementAndGet();
+    public void increment(String name) {
+        increment(name, 1);
     }
     
     /**
-     * WebSocket 连接增加
+     * 增加计数器
+     * @param name 计数器名称
+     * @param value 增量
      */
-    public void wsConnect() {
-        wsConnections.incrementAndGet();
+    public void increment(String name, long value) {
+        counters.computeIfAbsent(name, k -> new AtomicLong(0)).addAndGet(value);
     }
     
     /**
-     * WebSocket 连接减少
+     * 设置仪表值
+     * @param name 仪表名称
+     * @param value 值
      */
-    public void wsDisconnect() {
-        wsConnections.decrementAndGet();
+    public void setGauge(String name, long value) {
+        gauges.put(name, value);
     }
     
     /**
-     * 获取指标摘要
+     * 记录计时
+     * @param name 计时器名称
+     * @param durationMs 持续时间（毫秒）
      */
-    public Map<String, Object> getSummary() {
-        Map<String, Object> summary = new LinkedHashMap<>();
-        
-        // 基本信息
-        summary.put("uptime_ms", System.currentTimeMillis() - startTime);
-        summary.put("uptime_human", formatUptime(System.currentTimeMillis() - startTime));
-        
-        // 请求统计
-        Map<String, Object> requests = new LinkedHashMap<>();
-        requests.put("total", totalRequests.get());
-        requests.put("success", successRequests.get());
-        requests.put("failed", failedRequests.get());
-        requests.put("success_rate", calculateRate(successRequests.get(), totalRequests.get()));
-        summary.put("requests", requests);
-        
-        // WebSocket
-        summary.put("websocket_connections", wsConnections.get());
-        
-        // 响应时间分布
-        Map<String, Long> timeDistribution = new LinkedHashMap<>();
-        for (String name : BUCKET_NAMES) {
-            timeDistribution.put(name, responseTimeBuckets.getOrDefault(name, new AtomicLong(0)).get());
-        }
-        summary.put("response_time_distribution", timeDistribution);
-        
-        // 错误码统计
-        Map<String, Long> errors = new LinkedHashMap<>();
-        errorCodes.forEach((code, count) -> errors.put(code.toString(), count.get()));
-        summary.put("error_codes", errors);
-        
-        return summary;
+    public void recordTime(String name, long durationMs) {
+        timers.put(name, durationMs);
     }
     
     /**
-     * 获取端点统计
+     * 开始计时
+     * @return 开始时间戳
      */
-    public Map<String, Object> getEndpointStats() {
-        Map<String, Object> stats = new LinkedHashMap<>();
-        
-        endpointStats.forEach((endpoint, stat) -> {
-            Map<String, Object> endpointData = new LinkedHashMap<>();
-            endpointData.put("total_requests", stat.totalRequests.get());
-            endpointData.put("avg_latency_ms", stat.calculateAvgLatency());
-            endpointData.put("max_latency_ms", stat.maxLatency.get());
-            endpointData.put("error_count", stat.errorCount.get());
-            stats.put(endpoint, endpointData);
-        });
-        
-        return stats;
+    public long startTimer() {
+        return System.currentTimeMillis();
     }
     
     /**
-     * 重置指标
+     * 结束计时并记录
+     * @param name 计时器名称
+     * @param startTime 开始时间戳
+     */
+    public void stopTimer(String name, long startTime) {
+        recordTime(name, System.currentTimeMillis() - startTime);
+    }
+    
+    /**
+     * 获取计数器值
+     * @param name 计数器名称
+     * @return 值
+     */
+    public long getCounter(String name) {
+        AtomicLong counter = counters.get(name);
+        return counter != null ? counter.get() : 0;
+    }
+    
+    /**
+     * 获取仪表值
+     * @param name 仪表名称
+     * @return 值
+     */
+    public long getGauge(String name) {
+        return gauges.getOrDefault(name, 0L);
+    }
+    
+    /**
+     * 获取计时值
+     * @param name 计时器名称
+     * @return 值（毫秒）
+     */
+    public long getTimer(String name) {
+        return timers.getOrDefault(name, 0L);
+    }
+    
+    /**
+     * 获取运行时间（秒）
+     * @return 运行时间
+     */
+    public long getUptimeSeconds() {
+        return (System.currentTimeMillis() - startTime) / 1000;
+    }
+    
+    /**
+     * 导出所有指标
+     * @return 指标映射
+     */
+    public Map<String, Object> export() {
+        Map<String, Object> result = new ConcurrentHashMap<>();
+        
+        result.put("uptime_seconds", getUptimeSeconds());
+        result.put("start_time", startTime);
+        result.put("timestamp", System.currentTimeMillis());
+        
+        // 计数器
+        Map<String, Long> counterMap = new ConcurrentHashMap<>();
+        counters.forEach((k, v) -> counterMap.put(k, v.get()));
+        result.put("counters", counterMap);
+        
+        // 仪表
+        result.put("gauges", new ConcurrentHashMap<>(gauges));
+        
+        // 计时器
+        result.put("timers", new ConcurrentHashMap<>(timers));
+        
+        return result;
+    }
+    
+    /**
+     * 重置所有指标
      */
     public void reset() {
-        totalRequests.set(0);
-        successRequests.set(0);
-        failedRequests.set(0);
-        endpointStats.clear();
-        responseTimeBuckets.clear();
-        errorCodes.clear();
+        counters.clear();
+        gauges.clear();
+        timers.clear();
+        startTime = System.currentTimeMillis();
+        Logger.info("Metrics reset");
     }
     
-    // 辅助方法
-    private String getBucket(long durationMs) {
-        for (int i = 0; i < TIME_BUCKETS.length; i++) {
-            if (durationMs < TIME_BUCKETS[i]) {
-                return BUCKET_NAMES[i];
-            }
-        }
-        return BUCKET_NAMES[BUCKET_NAMES.length - 1];
+    /**
+     * 记录 API 请求
+     * @param endpoint 端点
+     * @param method HTTP 方法
+     * @param statusCode 状态码
+     * @param durationMs 持续时间
+     */
+    public void recordApiRequest(String endpoint, String method, int statusCode, long durationMs) {
+        increment("api_requests_total");
+        increment("api_requests_" + method.toLowerCase());
+        increment("api_requests_status_" + statusCode);
+        recordTime("api_request_" + endpoint.replace("/", "_"), durationMs);
     }
     
-    private double calculateRate(long success, long total) {
-        return total > 0 ? (double) success / total * 100 : 0;
+    /**
+     * 记录 WebSocket 连接
+     */
+    public void recordWebSocketConnection() {
+        increment("websocket_connections_total");
     }
     
-    private String formatUptime(long uptimeMs) {
-        long seconds = uptimeMs / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-        
-        if (days > 0) return String.format("%dd %dh", days, hours % 24);
-        if (hours > 0) return String.format("%dh %dm", hours, minutes % 60);
-        if (minutes > 0) return String.format("%dm %ds", minutes, seconds % 60);
-        return String.format("%ds", seconds);
-    }
-    
-    // 端点统计类
-    private static class EndpointStats {
-        final AtomicLong totalRequests = new AtomicLong(0);
-        final AtomicLong errorCount = new AtomicLong(0);
-        final AtomicLong totalLatency = new AtomicLong(0);
-        final AtomicLong maxLatency = new AtomicLong(0);
-        final AtomicLong minLatency = new AtomicLong(Long.MAX_VALUE);
-        
-        void record(int statusCode, long latencyMs) {
-            totalRequests.incrementAndGet();
-            totalLatency.addAndGet(latencyMs);
-            
-            // 更新最大延迟
-            long currentMax;
-            do {
-                currentMax = maxLatency.get();
-                if (latencyMs <= currentMax) break;
-            } while (!maxLatency.compareAndSet(currentMax, latencyMs));
-            
-            // 更新最小延迟
-            long currentMin;
-            do {
-                currentMin = minLatency.get();
-                if (latencyMs >= currentMin) break;
-            } while (!minLatency.compareAndSet(currentMin, latencyMs));
-            
-            // 错误计数
-            if (statusCode >= 400) {
-                errorCount.incrementAndGet();
-            }
-        }
-        
-        double calculateAvgLatency() {
-            long total = totalRequests.get();
-            return total > 0 ? (double) totalLatency.get() / total : 0;
-        }
+    /**
+     * 记录 WebSocket 断开
+     */
+    public void recordWebSocketDisconnection() {
+        increment("websocket_disconnections_total");
     }
 }
