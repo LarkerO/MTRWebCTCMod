@@ -135,15 +135,18 @@ ws://host:port/ws
 
 1. **下载 MTR JAR 文件**（编译必需）：
    ```bash
-   # 从 CurseForge 或 Modrinth 下载 slim jars
-   # 放置到 libs/mtr3/ 目录
+   cd libs/mtr3
+   # 使用 gh CLI 下载
+   gh release download 3.2.2-hotfix-1 -R Minecraft-Transit-Railway/Minecraft-Transit-Railway -p "*-slim.jar"
+   gh release download 3.2.2-hotfix-2 -R Minecraft-Transit-Railway/Minecraft-Transit-Railway -p "*-slim.jar"
+   # 或从 https://github.com/Minecraft-Transit-Railway/Minecraft-Transit-Railway/releases 手动下载
    ```
-   详见 `libs/mtr3/README.md`。
 
-2. **设置 GitHub Actions**（可选）：
+2. **设置 GitHub Actions**（需要 workflow 权限）：
    ```bash
    mkdir -p .github/workflows
    cp docs/build.yml.example .github/workflows/build.yml
+   git add .github/workflows/build.yml && git commit -m "ci: Add workflow" && git push
    ```
 
 ### 构建命令
