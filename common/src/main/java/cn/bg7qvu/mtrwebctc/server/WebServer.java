@@ -121,10 +121,10 @@ public class WebServer {
             new StationRouter(mtrDataManager, authManager).register(apiRoutes);
             new RouteRouter(mtrDataManager, authManager).register(apiRoutes);
             new DepotRouter(mtrDataManager, authManager, backupManager).register(apiRoutes);
-            new TrainRouter(mtrDataManager, trainTracker).register(apiRoutes);
+            new TrainRouter(trainTracker).register(apiRoutes);
             
             // 配置
-            new ConfigRouter(config).register(apiRoutes);
+            new ConfigRouter(config, authManager).register(apiRoutes);
             
             // 备份
             new BackupRouter(backupManager, authManager).register(apiRoutes);
