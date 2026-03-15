@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "${archives_base_name}",
+  "version": "${version}",
+  "name": "MTRWebCTC",
+  "description": "Web-based CTC system for MTR (Minecraft Transit Railway) 3.x",
+  "authors": ["bg7qvu"],
+  "contact": {
+    "homepage": "https://github.com/LarkerO/MTRWebCTCMod",
+    "sources": "https://github.com/LarkerO/MTRWebCTCMod"
+  },
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "cn.bg7qvu.mtrwebctc.fabric.MTRWebCTCFabric"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": "~${mc_version}",
+    "java": ">=8",
+    "mtr": ">=3.0.0"
+  }
+}

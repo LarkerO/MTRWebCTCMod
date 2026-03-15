@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[40,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/LarkerO/MTRWebCTCMod/issues"
+
+[[mods]]
+modId = "mtrwebctc"
+version = "${version}"
+displayName = "MTRWebCTC"
+authors = "bg7qvu"
+description = '''
+Web-based CTC system for MTR (Minecraft Transit Railway) 3.x
+Provides web control panel, API endpoints, and real-time train monitoring.
+'''
+
+[[dependencies.mtrwebctc]]
+modId = "forge"
+mandatory = true
+versionRange = "[40,)"
+ordering = "NONE"
+side = "SERVER"
+
+[[dependencies.mtrwebctc]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.18.2,1.19)"
+ordering = "NONE"
+side = "SERVER"
+
+[[dependencies.mtrwebctc]]
+modId = "mtr"
+mandatory = true
+versionRange = "[3.0.0,4.0.0)"
+ordering = "AFTER"
+side = "SERVER"
