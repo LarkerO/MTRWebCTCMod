@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net' }
+        maven { name = 'Architectury'; url = 'https://maven.architectury.dev' }
+        maven { name = 'Forge'; url = 'https://files.minecraftforge.net/maven' }
+    }
+}
+
+rootProject.name = 'MTRWebCTCMod'
+
+include 'common'
+include 'fabric-1.16.5'
+include 'fabric-1.18.2'
+include 'fabric-1.20.1'
+include 'forge-1.16.5'
+include 'forge-1.18.2'
+include 'forge-1.20.1'

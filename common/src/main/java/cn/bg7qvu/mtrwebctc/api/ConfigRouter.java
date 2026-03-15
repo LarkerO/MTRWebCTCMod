@@ -4,12 +4,13 @@ import cn.bg7qvu.mtrwebctc.config.Config;
 import cn.bg7qvu.mtrwebctc.config.ConfigLoader;
 import cn.bg7qvu.mtrwebctc.util.Logger;
 import io.ktor.http.HttpStatusCode;
-import io.ktor.server.application.*;
-import io.ktor.server.request.receive;
-import io.ktor.server.response.respond;
-import io.ktor.server.routing.*;
+import io.ktor.server.routing.Routing;
+import io.ktor.server.routing.get;
+import io.ktor.server.routing.post;
+import io.ktor.server.routing.put;
+import io.ktor.server.routing.route;
 
-import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -22,23 +23,24 @@ public class ConfigRouter {
         this.config = config;
     }
     
-    public Route.Routing.() -> Unit createRoutes() {
-        return route -> {
+    public void register(Routing routing) {
+        routing.route("/config", route -> {
             // GET /api/config - 获取配置
             route.get(ctx -> {
-                ctx.respond(config);
+                ctx.getCall().respond(config);
             });
             
             // PUT /api/config - 修改配置
             route.put(ctx -> {
                 try {
-                    Config newConfig = ctx.receive(Config.class);
+                    Config newConfig = ctx.getCall().receive(Config.class);
                     
                     // 验证配置
                     if (newConfig.getServer().getPort() < 1 || 
                         newConfig.getServer().getPort() > 65535) {
-                        ctx.respond(HttpStatusCode.BadRequest, 
-                                     Map.of("error", "Invalid port"));
+                        Map<String, String> result = new HashMap<>();
+                        result.put("error", "Invalid port");
+                        ctx.getCall().respond(HttpStatusCode.BadRequest, result);
                         return;
                     }
                     
@@ -50,31 +52,41 @@ public class ConfigRouter {
                     config.setStorage(newConfig.getStorage());
                     
                     // 保存配置
-                    Path configDir = cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance().getConfigDir();
-                    ConfigLoader.save(configDir, config);
+                    cn.bg7qvu.mtrwebctc.MTRWebCTCMod mod = 
+                        cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance();
+                    if (mod != null) {
+                        ConfigLoader.save(mod.getConfigDir(), config);
+                    }
                     
-                    ctx.respond(config);
+                    ctx.getCall().respond(config);
                     Logger.info("Configuration updated successfully");
                 } catch (Exception e) {
                     Logger.error("Failed to update config: " + e.getMessage());
-                    ctx.respond(HttpStatusCode.InternalServerError, 
-                                 Map.of("error", "Failed to update config"));
+                    Map<String, String> result = new HashMap<>();
+                    result.put("error", "Failed to update config");
+                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
                 }
             });
             
             // POST /api/config/reload - 重载配置
             route.post("reload", ctx -> {
                 try {
-                    Path configDir = cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance().getConfigDir();
-                    ConfigLoader.reload(configDir);
-                    ctx.respond(Map.of("success", true));
+                    cn.bg7qvu.mtrwebctc.MTRWebCTCMod mod = 
+                        cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance();
+                    if (mod != null) {
+                        ConfigLoader.reload(mod.getConfigDir());
+                    }
+                    Map<String, Boolean> result = new HashMap<>();
+                    result.put("success", true);
+                    ctx.getCall().respond(result);
                     Logger.info("Configuration reloaded successfully");
                 } catch (Exception e) {
                     Logger.error("Failed to reload config: " + e.getMessage());
-                    ctx.respond(HttpStatusCode.InternalServerError, 
-                                 Map.of("error", "Failed to reload config"));
+                    Map<String, String> result = new HashMap<>();
+                    result.put("error", "Failed to reload config");
+                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
                 }
             });
-        };
+        });
     }
 }
