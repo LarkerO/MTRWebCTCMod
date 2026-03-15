@@ -131,6 +131,23 @@ ws://host:port/ws
 
 ## 构建
 
+### 准备工作
+
+1. **下载 MTR JAR 文件**（编译必需）：
+   ```bash
+   # 从 CurseForge 或 Modrinth 下载 slim jars
+   # 放置到 libs/mtr3/ 目录
+   ```
+   详见 `libs/mtr3/README.md`。
+
+2. **设置 GitHub Actions**（可选）：
+   ```bash
+   mkdir -p .github/workflows
+   cp docs/build.yml.example .github/workflows/build.yml
+   ```
+
+### 构建命令
+
 ```bash
 # 下载依赖
 ./gradlew downloadAllDependencies
