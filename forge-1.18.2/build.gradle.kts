@@ -17,7 +17,7 @@ dependencies {
     minecraft("com.mojang:minecraft:1.18.2")
     mappings(loom.officialMojangMappings())
     
-    forge("net.minecraftforge:forge:1.18.2-40.2.21")
+    add("forge", "net.minecraftforge:forge:1.18.2-40.2.21")
     
     // Architectury API
     implementation(files(rootProject.file("checkouts/architectury-13.0.8.jar")))
