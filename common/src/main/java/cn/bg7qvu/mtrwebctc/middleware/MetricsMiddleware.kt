@@ -1,7 +1,9 @@
 package cn.bg7qvu.mtrwebctc.middleware;
 
-import cn.bg7qvu.mtrwebctc.metrics.MetricsCollector;
+import cn.bg7qvu.mtrwebctc.metrics.MetricsCollector
 import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.util.*
 import java.util.concurrent.atomic.AtomicLong
 
@@ -29,7 +31,7 @@ public class MetricsMiddleware(private val metrics: MetricsCollector) {
                 val method = call.request.httpMethod.value
                 val status = call.response.status()?.value ?: 0
                 
-                metrics.recordRequest(endpoint, method, status, duration)
+                metrics.recordApiRequest(endpoint, method, status, duration)
             }
         }
     }

@@ -2,190 +2,143 @@ package cn.bg7qvu.mtrwebctc.command;
 
 import cn.bg7qvu.mtrwebctc.MTRWebCTCMod;
 import cn.bg7qvu.mtrwebctc.auth.AuthManager;
+import cn.bg7qvu.mtrwebctc.backup.BackupManager;
 import cn.bg7qvu.mtrwebctc.config.Config;
-import cn.bg7qvu.mtrwebctc.server.WebServer;
+import cn.bg7qvu.mtrwebctc.config.ConfigLoader;
 import cn.bg7qvu.mtrwebctc.util.HashUtil;
 import cn.bg7qvu.mtrwebctc.util.Logger;
 
 /**
- * 游戏内命令处理器
+ * In-game command handler for /mtrwebctc commands.
+ * Platform-specific code should call handleCommand() with the appropriate sender.
  */
 public class CommandHandler {
     private final MTRWebCTCMod mod;
-    private final Config config;
-    private final AuthManager authManager;
-    private final WebServer webServer;
-    
-    public CommandHandler(MTRWebCTCMod mod, Config config, AuthManager authManager, WebServer webServer) {
+
+    public CommandHandler(MTRWebCTCMod mod) {
         this.mod = mod;
-        this.config = config;
-        this.authManager = authManager;
-        this.webServer = webServer;
     }
-    
+
     /**
-     * 处理命令
-     * @param sender 命令发送者
-     * @param args 命令参数
-     * @return 命令执行结果
+     * Handle a command.
+     * @param args command arguments
+     * @return result messages
      */
-    public boolean handleCommand(Object sender, String[] args) {
+    public String handleCommand(String[] args) {
         if (args.length == 0) {
-            sendHelp(sender);
-            return true;
+            return getHelp();
         }
-        
+
         String subCommand = args[0].toLowerCase();
-        
+
         switch (subCommand) {
             case "password":
-                return handlePassword(sender, args);
+                return handlePassword(args);
             case "token":
-                return handleToken(sender, args);
+                return handleToken(args);
             case "reload":
-                return handleReload(sender);
+                return handleReload();
             case "status":
-                return handleStatus(sender);
+                return handleStatus();
             case "backup":
-                return handleBackup(sender, args);
+                return handleBackup(args);
             case "help":
-                sendHelp(sender);
-                return true;
+                return getHelp();
             default:
-                sendMessage(sender, "Unknown command: " + subCommand);
-                return false;
+                return "Unknown command: " + subCommand;
         }
     }
-    
-    private boolean handlePassword(Object sender, String[] args) {
+
+    private String handlePassword(String[] args) {
         if (args.length < 2) {
-            sendMessage(sender, "Usage: /mtrwebctc password <password>");
-            return false;
+            return "Usage: /mtrwebctc password <password>";
         }
-        
+
         String password = args[1];
-        
-        // 验证密码长度
         if (password.length() < 6) {
-            sendMessage(sender, "Password must be at least 6 characters");
-            return false;
+            return "Password must be at least 6 characters";
         }
-        
-        // 设置密码
+
+        Config config = mod.getConfig();
+        if (config == null) return "Config not loaded";
+
         String hash = HashUtil.hashPassword(password);
         config.getAuth().setPasswordHash(hash);
-        
-        // 保存配置
+
         try {
-            mod.saveConfig();
-            sendMessage(sender, "Password set successfully");
-            Logger.info("Password updated by " + getSenderName(sender));
+            ConfigLoader.save(mod.getConfigDir(), config);
+            Logger.info("Password updated via command");
+            return "Password set successfully";
         } catch (Exception e) {
-            sendMessage(sender, "Failed to save password: " + e.getMessage());
-            return false;
+            return "Failed to save password: " + e.getMessage();
         }
-        
-        return true;
     }
-    
-    private boolean handleToken(Object sender, String[] args) {
-        if (args.length < 2) {
-            // 生成新 token
-            String token = authManager.generateToken();
-            sendMessage(sender, "Generated token: " + token);
-            sendMessage(sender, "Use this token in Authorization header: Bearer " + token);
-            return true;
-        }
-        
-        String action = args[1].toLowerCase();
-        
-        if ("revoke".equals(action)) {
-            authManager.revokeToken();
-            sendMessage(sender, "Token revoked");
-            return true;
-        }
-        
-        sendMessage(sender, "Usage: /mtrwebctc token [revoke]");
-        return false;
+
+    private String handleToken(String[] args) {
+        Config config = mod.getConfig();
+        if (config == null) return "Config not loaded";
+
+        AuthManager authManager = new AuthManager(config);
+        String token = authManager.generateToken();
+        return "Generated token: " + token + "\nUse in Authorization header: Bearer " + token;
     }
-    
-    private boolean handleReload(Object sender) {
+
+    private String handleReload() {
         try {
-            mod.reloadConfig();
-            sendMessage(sender, "Configuration reloaded");
-            Logger.info("Config reloaded by " + getSenderName(sender));
-            return true;
+            ConfigLoader.reload(mod.getConfigDir());
+            Logger.info("Config reloaded via command");
+            return "Configuration reloaded";
         } catch (Exception e) {
-            sendMessage(sender, "Failed to reload: " + e.getMessage());
-            return false;
+            return "Failed to reload: " + e.getMessage();
         }
     }
-    
-    private boolean handleStatus(Object sender) {
+
+    private String handleStatus() {
+        Config config = mod.getConfig();
+        if (config == null) return "Config not loaded";
+
         StringBuilder sb = new StringBuilder();
         sb.append("=== MTRWebCTC Status ===\n");
-        sb.append("Server: ").append(webServer.isRunning() ? "Running" : "Stopped").append("\n");
+        sb.append("Version: ").append(MTRWebCTCMod.VERSION).append("\n");
         sb.append("Port: ").append(config.getServer().getPort()).append("\n");
-        sb.append("Auth: ").append(authManager.isPasswordRequired() ? "Enabled" : "Disabled").append("\n");
         sb.append("Backup: ").append(config.getBackup().isEnabled() ? "Enabled" : "Disabled").append("\n");
-        
-        sendMessage(sender, sb.toString());
-        return true;
+        return sb.toString();
     }
-    
-    private boolean handleBackup(Object sender, String[] args) {
+
+    private String handleBackup(String[] args) {
         if (args.length < 2) {
-            sendMessage(sender, "Usage: /mtrwebctc backup <create|list|restore>");
-            return false;
+            return "Usage: /mtrwebctc backup <create|list>";
         }
-        
+
         String action = args[1].toLowerCase();
-        
+        BackupManager backupManager = mod.getBackupManager();
+        if (backupManager == null) return "Backup manager not initialized";
+
         switch (action) {
             case "create":
-                mod.createBackup("manual");
-                sendMessage(sender, "Backup created");
-                return true;
+                String id = backupManager.createBackup("manual-command");
+                return id != null ? "Backup created: " + id : "Failed to create backup";
             case "list":
-                // TODO: 列出备份
-                sendMessage(sender, "Backup list feature coming soon");
-                return true;
-            case "restore":
-                if (args.length < 3) {
-                    sendMessage(sender, "Usage: /mtrwebctc backup restore <id>");
-                    return false;
+                java.util.List<BackupManager.BackupInfo> backups = backupManager.getBackupList();
+                if (backups.isEmpty()) return "No backups found";
+                StringBuilder sb = new StringBuilder("=== Backups ===\n");
+                for (BackupManager.BackupInfo info : backups) {
+                    sb.append(info.getId()).append(" (").append(info.getSize()).append(" bytes)\n");
                 }
-                // TODO: 恢复备份
-                sendMessage(sender, "Backup restore feature coming soon");
-                return true;
+                return sb.toString();
             default:
-                sendMessage(sender, "Unknown backup action: " + action);
-                return false;
+                return "Unknown backup action: " + action;
         }
     }
-    
-    private void sendHelp(Object sender) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== MTRWebCTC Commands ===\n");
-        sb.append("/mtrwebctc password <password> - Set web auth password\n");
-        sb.append("/mtrwebctc token - Generate auth token\n");
-        sb.append("/mtrwebctc token revoke - Revoke current token\n");
-        sb.append("/mtrwebctc reload - Reload configuration\n");
-        sb.append("/mtrwebctc status - Show server status\n");
-        sb.append("/mtrwebctc backup create - Create backup\n");
-        sb.append("/mtrwebctc help - Show this help\n");
-        
-        sendMessage(sender, sb.toString());
-    }
-    
-    // 平台相关方法（由 loader 实现）
-    private void sendMessage(Object sender, String message) {
-        // 由 Fabric/Forge loader 实现
-        mod.sendMessageToPlayer(sender, message);
-    }
-    
-    private String getSenderName(Object sender) {
-        // 由 Fabric/Forge loader 实现
-        return mod.getPlayerName(sender);
+
+    private String getHelp() {
+        return "=== MTRWebCTC Commands ===\n" +
+            "/mtrwebctc password <password> - Set web auth password\n" +
+            "/mtrwebctc token - Generate auth token\n" +
+            "/mtrwebctc reload - Reload configuration\n" +
+            "/mtrwebctc status - Show server status\n" +
+            "/mtrwebctc backup create - Create backup\n" +
+            "/mtrwebctc backup list - List backups\n" +
+            "/mtrwebctc help - Show this help";
     }
 }

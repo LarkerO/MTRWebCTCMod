@@ -1,36 +1,22 @@
-package cn.bg7qvu.mtrwebctc.server;
+package cn.bg7qvu.mtrwebctc.server
 
-import cn.bg7qvu.mtrwebctc.MTRWebCTCMod;
-import io.ktor.server.application.*;
-import io.ktor.server.routing.*;
-import io.ktor.server.response.*;
-import io.ktor.http.*;
+import cn.bg7qvu.mtrwebctc.util.Constants
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 /**
- * 健康检查路由
+ * Health check routes
  */
-public class HealthRouter {
-    private final MTRWebCTCMod mod;
-    
-    public HealthRouter(MTRWebCTCMod mod) {
-        this.mod = mod;
-    }
-    
-    public void register(route: Route) {
+class HealthRouter {
+
+    fun register(route: Route) {
         route.get("/health") {
             try {
                 val health = mapOf(
                     "status" to "ok",
-                    "version" to mod.getVersion(),
-                    "uptime" to mod.getUptime(),
-                    "minecraft" to mapOf(
-                        "version" to mod.getMinecraftVersion(),
-                        "loader" to mod.getLoaderType()
-                    ),
-                    "mtr" to mapOf(
-                        "version" to mod.getMTRVersion(),
-                        "loaded" to mod.isMTRLoaded()
-                    ),
+                    "version" to Constants.MOD_VERSION,
+                    "modId" to Constants.MOD_ID,
                     "timestamp" to System.currentTimeMillis()
                 )
                 call.respond(health)
@@ -41,20 +27,11 @@ public class HealthRouter {
                 )
             }
         }
-        
-        // 就绪探针
+
         route.get("/ready") {
-            if (mod.isReady()) {
-                call.respond(mapOf("ready" to true))
-            } else {
-                call.respond(
-                    HttpStatusCode.ServiceUnavailable,
-                    mapOf("ready" to false, "message" to "Server not ready")
-                )
-            }
+            call.respond(mapOf("ready" to true))
         }
-        
-        // 存活探针
+
         route.get("/live") {
             call.respond(mapOf("alive" to true))
         }
