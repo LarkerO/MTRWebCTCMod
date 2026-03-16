@@ -48,7 +48,7 @@ public class AlertManager {
         
         // 推送 WebSocket
         if (wsHandler != null) {
-            wsHandler.broadcast("alerts", Map.of("event", "created", "alert", alert));
+            wsHandler.broadcast("alerts", createMap("event", "created", "alert", alert));
         }
         
         return alert;
@@ -88,7 +88,7 @@ public class AlertManager {
         
         // 推送 WebSocket
         if (wsHandler != null) {
-            wsHandler.broadcast("alerts", Map.of("event", "acknowledged", "alert", alert));
+            wsHandler.broadcast("alerts", createMap("event", "acknowledged", "alert", alert));
         }
         
         return true;
@@ -182,11 +182,21 @@ public class AlertManager {
             bySeverity.merge(alert.getSeverity(), 1L, Long::sum);
         }
         
-        return Map.of(
-            "total", alerts.size(),
-            "active", activeAlerts.size(),
-            "unacknowledged", getUnacknowledgedAlerts().size(),
-            "by_severity", bySeverity
-        );
+        Map<String, Object> stats = new LinkedHashMap<>();
+        stats.put("total", alerts.size());
+        stats.put("active", activeAlerts.size());
+        stats.put("unacknowledged", getUnacknowledgedAlerts().size());
+        stats.put("by_severity", bySeverity);
+        
+        return stats;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K, V> Map<K, V> createMap(Object... keyValues) {
+        Map<K, V> map = new LinkedHashMap<>();
+        for (int i = 0; i < keyValues.length; i += 2) {
+            map.put((K) keyValues[i], (V) keyValues[i + 1]);
+        }
+        return map;
     }
 }

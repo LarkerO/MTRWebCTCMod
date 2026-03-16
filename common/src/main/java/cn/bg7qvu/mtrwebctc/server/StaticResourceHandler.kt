@@ -1,4 +1,4 @@
-package cn.bg7qvu.mtrwebctc.server;
+package cn.bg7qvu.mtrwebctc.server
 
 import cn.bg7qvu.mtrwebctc.util.Logger
 import io.ktor.server.application.*

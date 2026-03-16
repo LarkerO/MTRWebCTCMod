@@ -1,4 +1,4 @@
-package cn.bg7qvu.mtrwebctc.exception;
+package cn.bg7qvu.mtrwebctc.exception
 
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*

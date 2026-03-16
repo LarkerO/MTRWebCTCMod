@@ -1,4 +1,4 @@
-package cn.bg7qvu.mtrwebctc.middleware;
+package cn.bg7qvu.mtrwebctc.middleware
 
 import cn.bg7qvu.mtrwebctc.util.Logger
 import io.ktor.server.application.*
