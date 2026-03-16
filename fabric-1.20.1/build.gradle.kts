@@ -6,6 +6,10 @@ plugins {
 val modVersion: String by rootProject.extra
 val archivesBaseName: String by rootProject.extra
 
+loom {
+    silentMojangMappingsLicense()
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:1.20.1")
     mappings(loom.officialMojangMappings())
@@ -21,10 +25,6 @@ dependencies {
     
     // Common module
     implementation(project(":common"))
-}
-
-loom {
-    silentMojangMappingsLicense()
 }
 
 java {

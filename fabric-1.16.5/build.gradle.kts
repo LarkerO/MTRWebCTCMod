@@ -7,6 +7,10 @@ val modVersion: String by rootProject.extra
 val archivesBaseName: String by rootProject.extra
 val ktorVersion: String by rootProject.extra
 
+loom {
+    silentMojangMappingsLicense()
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:1.16.5")
     mappings(loom.officialMojangMappings())
@@ -22,10 +26,6 @@ dependencies {
     
     // Common module
     implementation(project(":common"))
-}
-
-loom {
-    silentMojangMappingsLicense()
 }
 
 java {
