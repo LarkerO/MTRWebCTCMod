@@ -38,7 +38,7 @@ public class TrainRouter {
                     ctx.getCall().respond(response);
                 } catch (Exception e) {
                     Logger.error("Failed to get trains: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get trains: " + e.getMessage()));
                 }
             });
@@ -48,7 +48,7 @@ public class TrainRouter {
                 try {
                     String trainId = ctx.getCall().getParameters().get("id");
                     if (trainId == null || trainId.isEmpty()) {
-                        ctx.getCall().respond(HttpStatusCode.BadRequest, error("Missing train ID"));
+                        ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Missing train ID"));
                         return;
                     }
                     
@@ -56,11 +56,11 @@ public class TrainRouter {
                     if (train != null) {
                         ctx.getCall().respond(train);
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Train not found: " + trainId));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Train not found: " + trainId));
                     }
                 } catch (Exception e) {
                     Logger.error("Failed to get train: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, error("Failed to get train"));
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), error("Failed to get train"));
                 }
             });
             
@@ -69,7 +69,7 @@ public class TrainRouter {
                 try {
                     String trainId = ctx.getCall().getParameters().get("id");
                     if (trainId == null || trainId.isEmpty()) {
-                        ctx.getCall().respond(HttpStatusCode.BadRequest, error("Missing train ID"));
+                        ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Missing train ID"));
                         return;
                     }
                     
@@ -84,7 +84,7 @@ public class TrainRouter {
                     ctx.getCall().respond(response);
                 } catch (Exception e) {
                     Logger.error("Failed to get train history: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get train history: " + e.getMessage()));
                 }
             });
@@ -94,7 +94,7 @@ public class TrainRouter {
                 try {
                     String routeIdStr = ctx.getCall().getParameters().get("routeId");
                     if (routeIdStr == null || routeIdStr.isEmpty()) {
-                        ctx.getCall().respond(HttpStatusCode.BadRequest, error("Missing route ID"));
+                        ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Missing route ID"));
                         return;
                     }
                     
@@ -109,10 +109,10 @@ public class TrainRouter {
                     
                     ctx.getCall().respond(response);
                 } catch (NumberFormatException e) {
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, error("Invalid route ID"));
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Invalid route ID"));
                 } catch (Exception e) {
                     Logger.error("Failed to get route trains: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, error("Failed to get route trains"));
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), error("Failed to get route trains"));
                 }
             });
             
@@ -121,7 +121,7 @@ public class TrainRouter {
                 try {
                     String depotIdStr = ctx.getCall().getParameters().get("depotId");
                     if (depotIdStr == null || depotIdStr.isEmpty()) {
-                        ctx.getCall().respond(HttpStatusCode.BadRequest, error("Missing depot ID"));
+                        ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Missing depot ID"));
                         return;
                     }
                     
@@ -136,10 +136,10 @@ public class TrainRouter {
                     
                     ctx.getCall().respond(response);
                 } catch (NumberFormatException e) {
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, error("Invalid depot ID"));
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Invalid depot ID"));
                 } catch (Exception e) {
                     Logger.error("Failed to get depot trains: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, error("Failed to get depot trains"));
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), error("Failed to get depot trains"));
                 }
             });
         });

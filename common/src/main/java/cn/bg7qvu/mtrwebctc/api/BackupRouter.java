@@ -37,7 +37,7 @@ public class BackupRouter {
                     Logger.error("Failed to get backups: " + e.getMessage());
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Failed to get backups");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
             
@@ -46,7 +46,7 @@ public class BackupRouter {
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Unauthorized");
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, result);
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), result);
                     return;
                 }
                 
@@ -61,7 +61,7 @@ public class BackupRouter {
                     Logger.error("Failed to create backup: " + e.getMessage());
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Failed to create backup");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
             
@@ -70,7 +70,7 @@ public class BackupRouter {
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Unauthorized");
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, result);
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), result);
                     return;
                 }
                 
@@ -85,13 +85,13 @@ public class BackupRouter {
                     } else {
                         Map<String, String> result = new HashMap<>();
                         result.put("error", "Backup not found");
-                        ctx.getCall().respond(HttpStatusCode.NotFound, result);
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), result);
                     }
                 } catch (Exception e) {
                     Logger.error("Failed to restore backup: " + e.getMessage());
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Failed to restore backup");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
             
@@ -100,7 +100,7 @@ public class BackupRouter {
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Unauthorized");
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, result);
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), result);
                     return;
                 }
                 
@@ -115,13 +115,13 @@ public class BackupRouter {
                     } else {
                         Map<String, String> result = new HashMap<>();
                         result.put("error", "Backup not found");
-                        ctx.getCall().respond(HttpStatusCode.NotFound, result);
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), result);
                     }
                 } catch (Exception e) {
                     Logger.error("Failed to delete backup: " + e.getMessage());
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Failed to delete backup");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
         });

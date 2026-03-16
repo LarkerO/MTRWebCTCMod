@@ -36,7 +36,7 @@ public class StationRouter {
                     ctx.getCall().respond(stations);
                 } catch (Exception e) {
                     Logger.error("Failed to get stations: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get stations: " + e.getMessage()));
                 }
             });
@@ -49,13 +49,13 @@ public class StationRouter {
                     if (station != null) {
                         ctx.getCall().respond(station);
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Station not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Station not found"));
                     }
                 } catch (NumberFormatException e) {
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, error("Invalid station ID"));
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Invalid station ID"));
                 } catch (Exception e) {
                     Logger.error("Failed to get station: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get station: " + e.getMessage()));
                 }
             });
@@ -64,7 +64,7 @@ public class StationRouter {
             route.put("{id}", ctx -> {
                 // 验证权限
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, error("Unauthorized"));
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), error("Unauthorized"));
                     return;
                 }
                 
@@ -78,13 +78,13 @@ public class StationRouter {
                         ctx.getCall().respond(station);
                         Logger.info("Station " + id + " updated successfully");
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Station not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Station not found"));
                     }
                 } catch (NumberFormatException e) {
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, error("Invalid station ID"));
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Invalid station ID"));
                 } catch (Exception e) {
                     Logger.error("Failed to update station: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to update station: " + e.getMessage()));
                 }
             });
@@ -96,7 +96,7 @@ public class StationRouter {
                     ctx.getCall().respond(mtrDataManager.getPlatformsByStation(stationId));
                 } catch (Exception e) {
                     Logger.error("Failed to get platforms: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get platforms: " + e.getMessage()));
                 }
             });

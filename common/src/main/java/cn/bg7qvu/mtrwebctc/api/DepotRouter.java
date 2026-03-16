@@ -40,7 +40,7 @@ public class DepotRouter {
                     ctx.getCall().respond(depots);
                 } catch (Exception e) {
                     Logger.error("Failed to get depots: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get depots: " + e.getMessage()));
                 }
             });
@@ -53,17 +53,17 @@ public class DepotRouter {
                     if (depot != null) {
                         ctx.getCall().respond(depot);
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Depot not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Depot not found"));
                     }
                 } catch (Exception e) {
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, error("Invalid depot ID"));
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Invalid depot ID"));
                 }
             });
             
             // PUT /api/depots/{id} - 修改车厂
             route.put("{id}", ctx -> {
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, error("Unauthorized"));
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), error("Unauthorized"));
                     return;
                 }
                 
@@ -80,11 +80,11 @@ public class DepotRouter {
                         ctx.getCall().respond(depot);
                         Logger.info("Depot " + id + " updated successfully");
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Depot not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Depot not found"));
                     }
                 } catch (Exception e) {
                     Logger.error("Failed to update depot: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to update depot: " + e.getMessage()));
                 }
             });
@@ -92,7 +92,7 @@ public class DepotRouter {
             // PUT /api/depots/{id}/schedule - 修改发车时间表
             route.put("{id}/schedule", ctx -> {
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, error("Unauthorized"));
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), error("Unauthorized"));
                     return;
                 }
                 
@@ -111,11 +111,11 @@ public class DepotRouter {
                         ctx.getCall().respond(successMap());
                         Logger.info("Depot " + id + " schedule updated successfully");
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Depot not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Depot not found"));
                     }
                 } catch (Exception e) {
                     Logger.error("Failed to update schedule: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to update schedule: " + e.getMessage()));
                 }
             });
@@ -128,7 +128,7 @@ public class DepotRouter {
                     ctx.getCall().respond(trains);
                 } catch (Exception e) {
                     Logger.error("Failed to get depot trains: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get depot trains: " + e.getMessage()));
                 }
             });

@@ -40,14 +40,14 @@ public class AuthRouter {
                         Map<String, Object> result = new HashMap<>();
                         result.put("success", false);
                         result.put("error", "Invalid password");
-                        ctx.getCall().respond(HttpStatusCode.Unauthorized, result);
+                        ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), result);
                     }
                 } catch (Exception e) {
                     Logger.error("Login failed: " + e.getMessage());
                     Map<String, Object> result = new HashMap<>();
                     result.put("success", false);
                     result.put("error", "Login failed");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
             
@@ -72,7 +72,7 @@ public class AuthRouter {
                         Map<String, Object> result = new HashMap<>();
                         result.put("success", false);
                         result.put("error", "Password already set");
-                        ctx.getCall().respond(HttpStatusCode.BadRequest, result);
+                        ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), result);
                         return;
                     }
                     
@@ -86,7 +86,7 @@ public class AuthRouter {
                     Map<String, Object> result = new HashMap<>();
                     result.put("success", false);
                     result.put("error", "Failed to set password");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
             
@@ -95,7 +95,7 @@ public class AuthRouter {
                 if (!authManager.isWebauthnEnabled()) {
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "WebAuthn not enabled");
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, result);
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), result);
                     return;
                 }
                 Map<String, String> result = new HashMap<>();
@@ -107,7 +107,7 @@ public class AuthRouter {
                 if (!authManager.isWebauthnEnabled()) {
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "WebAuthn not enabled");
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, result);
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), result);
                     return;
                 }
                 Map<String, Boolean> result = new HashMap<>();

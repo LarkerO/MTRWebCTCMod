@@ -31,7 +31,7 @@ public class ConfigRouter {
         if (authManager.isPasswordRequired() && !authManager.validateToken(token)) {
             Map<String, String> result = new HashMap<>();
             result.put("error", "Unauthorized");
-            ctx.getCall().respond(HttpStatusCode.Unauthorized, result);
+            ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), result);
             return false;
         }
         return true;
@@ -93,7 +93,7 @@ public class ConfigRouter {
                             if (port.intValue() < 1 || port.intValue() > 65535) {
                                 Map<String, String> result = new HashMap<>();
                                 result.put("error", "Invalid port");
-                                ctx.getCall().respond(HttpStatusCode.BadRequest, result);
+                                ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), result);
                                 return;
                             }
                             config.getServer().setPort(port.intValue());
@@ -132,7 +132,7 @@ public class ConfigRouter {
                     Logger.error("Failed to update config: " + e.getMessage());
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Failed to update config");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
             
@@ -154,7 +154,7 @@ public class ConfigRouter {
                     Logger.error("Failed to reload config: " + e.getMessage());
                     Map<String, String> result = new HashMap<>();
                     result.put("error", "Failed to reload config");
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, result);
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), result);
                 }
             });
         });

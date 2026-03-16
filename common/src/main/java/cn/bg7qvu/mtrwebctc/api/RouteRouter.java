@@ -36,7 +36,7 @@ public class RouteRouter {
                     ctx.getCall().respond(routes);
                 } catch (Exception e) {
                     Logger.error("Failed to get routes: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get routes: " + e.getMessage()));
                 }
             });
@@ -49,17 +49,17 @@ public class RouteRouter {
                     if (route != null) {
                         ctx.getCall().respond(route);
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Route not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Route not found"));
                     }
                 } catch (Exception e) {
-                    ctx.getCall().respond(HttpStatusCode.BadRequest, error("Invalid route ID"));
+                    ctx.getCall().respond(new HttpStatusCode(400, "Bad Request"), error("Invalid route ID"));
                 }
             });
             
             // PUT /api/routes/{id} - 修改线路
             route.put("{id}", ctx -> {
                 if (!authManager.validateRequest(ctx.getCall().getApplicationCall())) {
-                    ctx.getCall().respond(HttpStatusCode.Unauthorized, error("Unauthorized"));
+                    ctx.getCall().respond(new HttpStatusCode(401, "Unauthorized"), error("Unauthorized"));
                     return;
                 }
                 
@@ -73,11 +73,11 @@ public class RouteRouter {
                         ctx.getCall().respond(route);
                         Logger.info("Route " + id + " updated successfully");
                     } else {
-                        ctx.getCall().respond(HttpStatusCode.NotFound, error("Route not found"));
+                        ctx.getCall().respond(new HttpStatusCode(404, "Not Found"), error("Route not found"));
                     }
                 } catch (Exception e) {
                     Logger.error("Failed to update route: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to update route: " + e.getMessage()));
                 }
             });
@@ -90,7 +90,7 @@ public class RouteRouter {
                     ctx.getCall().respond(trains);
                 } catch (Exception e) {
                     Logger.error("Failed to get trains: " + e.getMessage());
-                    ctx.getCall().respond(HttpStatusCode.InternalServerError, 
+                    ctx.getCall().respond(new HttpStatusCode(500, "Internal Server Error"), 
                                  error("Failed to get trains: " + e.getMessage()));
                 }
             });
