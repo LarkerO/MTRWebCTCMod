@@ -17,16 +17,19 @@ public class SubscriptionManager {
     // WebSocket 会话 -> 订阅的频道
     private final Map<WebSocketSession, Set<String>> sessionSubscriptions = new ConcurrentHashMap<>();
     
-    // 支持的频道
-    private static final Set<String> ALLOWED_CHANNELS = Set.of(
-        "trains",           // 列车位置更新
-        "stations",         // 车站更新
-        "routes",           // 线路更新
-        "depots",           // 车厂更新
-        "schedules",        // 时刻表更新
-        "alerts",           // 警报/通知
-        "system"            // 系统状态
-    );
+    // Supported channels
+    private static final Set<String> ALLOWED_CHANNELS;
+    static {
+        Set<String> channels = new HashSet<>();
+        channels.add("trains");
+        channels.add("stations");
+        channels.add("routes");
+        channels.add("depots");
+        channels.add("schedules");
+        channels.add("alerts");
+        channels.add("system");
+        ALLOWED_CHANNELS = Collections.unmodifiableSet(channels);
+    }
     
     /**
      * 订阅频道
