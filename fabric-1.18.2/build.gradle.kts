@@ -8,7 +8,7 @@ val archivesBaseName: String by rootProject.extra
 
 dependencies {
     minecraft("com.mojang:minecraft:1.18.2")
-    mappings("net.fabricmc:yarn:1.18.2+build.1:v2")
+    mappings(loom.officialMojangMappings())
     
     modImplementation("net.fabricmc:fabric-loader:0.14.23")
     modImplementation("net.fabricmc.fabric-api:fabric-api:0.76.0+1.18.2")
@@ -21,6 +21,10 @@ dependencies {
     
     // Common module
     implementation(project(":common"))
+}
+
+loom {
+    silentMojangMappingsLicense()
 }
 
 java {

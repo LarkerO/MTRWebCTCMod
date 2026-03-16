@@ -9,7 +9,7 @@ val ktorVersion: String by rootProject.extra
 
 dependencies {
     minecraft("com.mojang:minecraft:1.16.5")
-    mappings("net.fabricmc:yarn:1.16.5+build.1:v2")
+    mappings(loom.officialMojangMappings())
     
     modImplementation("net.fabricmc:fabric-loader:0.14.23")
     modImplementation("net.fabricmc.fabric-api:fabric-api:0.42.0+1.16")
@@ -22,6 +22,10 @@ dependencies {
     
     // Common module
     implementation(project(":common"))
+}
+
+loom {
+    silentMojangMappingsLicense()
 }
 
 java {

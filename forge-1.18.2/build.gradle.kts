@@ -8,7 +8,7 @@ val archivesBaseName: String by rootProject.extra
 
 dependencies {
     minecraft("com.mojang:minecraft:1.18.2")
-    mappings("net.fabricmc:yarn:1.18.2+build.1:v2")
+    mappings(loom.officialMojangMappings())
     
     forge("net.minecraftforge:forge:1.18.2-40.2.21")
     
@@ -20,6 +20,13 @@ dependencies {
     
     // Common module
     implementation(project(":common"))
+}
+
+loom {
+    silentMojangMappingsLicense()
+    forge {
+        convertAccessWideners.set(false)
+    }
 }
 
 java {
