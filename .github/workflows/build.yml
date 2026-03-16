@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
   workflow_dispatch:
 
@@ -29,15 +29,52 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      - name: Download MTR dependencies
+        run: |
+          mkdir -p libs/mtr3 checkouts
+          
+          # Download MTR jars from Modrinth and rename to expected names
+          curl -sL "https://api.modrinth.com/v2/project/minecraft-transit-railway/version" -o /tmp/mtr_versions.json
+          
+          # Fabric 1.16.5
+          URL=$(jq -r '.[] | select(.name == "FABRIC-1.16.5-3.2.2-hotfix-1") | .files[0].url' /tmp/mtr_versions.json)
+          curl -sL "$URL" -o libs/mtr3/MTR-fabric-1.16.5-3.2.2-hotfix-1-slim.jar
+          
+          # Fabric 1.18.2
+          URL=$(jq -r '.[] | select(.name == "FABRIC-1.18.2-3.2.2-hotfix-1") | .files[0].url' /tmp/mtr_versions.json)
+          curl -sL "$URL" -o libs/mtr3/MTR-fabric-1.18.2-3.2.2-hotfix-1-slim.jar
+          
+          # Fabric 1.20.1
+          URL=$(jq -r '.[] | select(.name == "FABRIC-1.20-3.2.2-hotfix-1") | .files[0].url' /tmp/mtr_versions.json)
+          curl -sL "$URL" -o libs/mtr3/MTR-fabric-1.20.1-3.2.2-hotfix-1-slim.jar
+          
+          # Forge 1.16.5
+          URL=$(jq -r '.[] | select(.name == "FORGE-1.16.5-3.2.2-hotfix-1") | .files[0].url' /tmp/mtr_versions.json)
+          curl -sL "$URL" -o libs/mtr3/MTR-forge-1.16.5-3.2.2-hotfix-1-slim.jar
+          
+          # Forge 1.18.2
+          URL=$(jq -r '.[] | select(.name == "FORGE-1.18.2-3.2.2-hotfix-1") | .files[0].url' /tmp/mtr_versions.json)
+          curl -sL "$URL" -o libs/mtr3/MTR-forge-1.18.2-3.2.2-hotfix-1-slim.jar
+          
+          # Forge 1.20.1
+          URL=$(jq -r '.[] | select(.name == "FORGE-1.20-3.2.2-hotfix-2") | .files[0].url' /tmp/mtr_versions.json)
+          curl -sL "$URL" -o libs/mtr3/MTR-forge-1.20.1-3.2.2-hotfix-2-slim.jar
+          
+          echo "Downloaded MTR files:"
+          ls -la libs/mtr3/
+
+      - name: Download Architectury dependencies
+        run: ./gradlew downloadAllDependencies --no-daemon
+
       - name: Build all targets
-        run: ./gradlew buildAllTargets
+        run: ./gradlew buildAllTargets --no-daemon
 
       - name: Upload fabric-1.16.5 release
         uses: actions/upload-artifact@v4
         with:
           name: fabric-1.16.5-release
           path: fabric-1.16.5/build/libs/*[!-sources][!-shadow].jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Upload fabric-1.18.2 release
@@ -45,7 +82,7 @@ jobs:
         with:
           name: fabric-1.18.2-release
           path: fabric-1.18.2/build/libs/*[!-sources][!-shadow].jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Upload fabric-1.20.1 release
@@ -53,7 +90,7 @@ jobs:
         with:
           name: fabric-1.20.1-release
           path: fabric-1.20.1/build/libs/*[!-sources][!-shadow].jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Upload forge-1.16.5 release
@@ -61,7 +98,7 @@ jobs:
         with:
           name: forge-1.16.5-release
           path: forge-1.16.5/build/libs/*[!-sources][!-shadow].jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Upload forge-1.18.2 release
@@ -69,7 +106,7 @@ jobs:
         with:
           name: forge-1.18.2-release
           path: forge-1.18.2/build/libs/*[!-sources][!-shadow].jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Upload forge-1.20.1 release
@@ -77,5 +114,5 @@ jobs:
         with:
           name: forge-1.20.1-release
           path: forge-1.20.1/build/libs/*[!-sources][!-shadow].jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14

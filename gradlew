@@ -70,7 +70,7 @@ else
 fi
 
 # Increase the maximum file descriptors if we can.
-MAX_FD=maximum
+MAX_FD=65536
 case $(ulimit -H -n) in
   '' | soft) :;;
   *)
