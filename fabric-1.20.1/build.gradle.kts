@@ -11,7 +11,7 @@ dependencies {
     mappings("net.fabricmc:yarn:1.20.1+build.1:v2")
     
     modImplementation("net.fabricmc:fabric-loader:0.15.10")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:0.92.1+1.20.1")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:0.86.1+1.20.1")
     
     // Architectury API
     implementation(files(rootProject.file("checkouts/architectury-13.0.8.jar")))
