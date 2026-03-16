@@ -114,15 +114,15 @@ public class StorageManager {
         
         private void initializeTables() throws SQLException {
             try (Statement stmt = connection.createStatement()) {
-                stmt.execute("""
-                    CREATE TABLE IF NOT EXISTS storage (
-                        collection TEXT NOT NULL,
-                        key TEXT NOT NULL,
-                        data TEXT NOT NULL,
-                        updated_at INTEGER NOT NULL,
-                        PRIMARY KEY (collection, key)
-                    )
-                """);
+                stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS storage (" +
+                    "collection TEXT NOT NULL, " +
+                    "key TEXT NOT NULL, " +
+                    "data TEXT NOT NULL, " +
+                    "updated_at INTEGER NOT NULL, " +
+                    "PRIMARY KEY (collection, key)" +
+                    ")"
+                );
             }
         }
         
