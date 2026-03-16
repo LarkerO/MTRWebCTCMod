@@ -1,12 +1,12 @@
-package cn.bg7qvu.mtrwebctc.middleware;
+package cn.bg7qvu.mtrwebctc.middleware
 
-import cn.bg7qvu.mtrwebctc.auth.AuthManager;
-import cn.bg7qvu.mtrwebctc.exception.MTRWebCTCException;
-import cn.bg7qvu.mtrwebctc.util.Logger;
+import cn.bg7qvu.mtrwebctc.auth.AuthManager
+import cn.bg7qvu.mtrwebctc.exception.MTRWebCTCException
+import cn.bg7qvu.mtrwebctc.util.Logger
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.http.*
-import io.ktor.util.*
 
 /**
  * 认证中间件

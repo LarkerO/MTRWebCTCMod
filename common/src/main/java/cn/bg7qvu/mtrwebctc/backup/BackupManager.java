@@ -2,7 +2,8 @@ package cn.bg7qvu.mtrwebctc.backup;
 
 import cn.bg7qvu.mtrwebctc.config.Config;
 import cn.bg7qvu.mtrwebctc.util.Logger;
-import mtr.data.RailwayData;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.*;
 import java.nio.file.*;
@@ -39,30 +40,32 @@ public class BackupManager {
             String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
             String backupId = timestamp + "_" + reason;
             Path backupFile = backupDir.resolve(backupId + ".json");
-            
-            // 获取 RailwayData
-            RailwayData railwayData = cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance()
-                .getMtrDataManager().getRailwayData();
-            
-            if (railwayData == null) {
-                Logger.error("RailwayData is null, cannot create backup");
+
+            // Serialize current MTR data snapshot using DTOs
+            cn.bg7qvu.mtrwebctc.mtr.MTRDataManager dataManager =
+                cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance().getMtrDataManager();
+
+            if (dataManager == null || dataManager.getRailwayData() == null) {
+                Logger.error("MTRDataManager or RailwayData is null, cannot create backup");
                 return null;
             }
-            
-            // 保存到临时文件
-            Path tempFile = Files.createTempFile("mtrwebctc-backup", ".json");
-            
-            // 使用 MTR 的序列化方法
-            // TODO: 实现实际的序列化
-            
-            // 移动到备份目录
-            Files.move(tempFile, backupFile, StandardCopyOption.REPLACE_EXISTING);
-            
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            java.util.Map<String, Object> snapshot = new java.util.LinkedHashMap<>();
+            snapshot.put("timestamp", System.currentTimeMillis());
+            snapshot.put("reason", reason);
+            snapshot.put("stations", dataManager.getAllStations());
+            snapshot.put("routes", dataManager.getAllRoutes());
+            snapshot.put("depots", dataManager.getAllDepots());
+
+            String json = gson.toJson(snapshot);
+            Files.write(backupFile, json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
             Logger.info("Backup created: " + backupId);
-            
-            // 清理旧备份
+
+            // Clean up old backups
             cleanupOldBackups();
-            
+
             return backupId;
         } catch (Exception e) {
             Logger.error("Failed to create backup: " + e.getMessage());

@@ -10,109 +10,130 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 认证管理器
+ * Authentication manager
  */
 public class AuthManager {
     private final Config config;
     private final Map<String, Long> tokens = new ConcurrentHashMap<>();
-    private static final long TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 小时
-    
+    private static final long TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
     public AuthManager(Config config) {
         this.config = config;
     }
-    
+
     /**
-     * 检查是否已设置密码
+     * Check if a password has been set
      */
     public boolean hasPassword() {
-        return config.getAuth().getPasswordHash() != null && 
+        return config.getAuth().getPasswordHash() != null &&
                !config.getAuth().getPasswordHash().isEmpty();
     }
-    
+
     /**
-     * 设置密码（首次）
+     * Check if password authentication is required
+     */
+    public boolean isPasswordRequired() {
+        return hasPassword();
+    }
+
+    /**
+     * Set password (first time)
      */
     public void setPassword(String password) {
         String hash = HashUtil.hashPassword(password);
         config.getAuth().setPasswordHash(hash);
-        
-        // 保存配置
+
         try {
             cn.bg7qvu.mtrwebctc.config.ConfigLoader.save(
-                cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance().getConfigDir(), 
+                cn.bg7qvu.mtrwebctc.MTRWebCTCMod.getInstance().getConfigDir(),
                 config
             );
         } catch (Exception e) {
             Logger.error("Failed to save password: " + e.getMessage());
         }
     }
-    
+
     /**
-     * 登录验证
+     * Login verification
      */
     public boolean login(String password) {
         if (!hasPassword()) {
-            // 未设置密码，允许任何密码登录（首次设置）
             return true;
         }
-        
+
         return HashUtil.verifyPassword(password, config.getAuth().getPasswordHash());
     }
-    
+
     /**
-     * 生成 token
+     * Generate token
      */
     public String generateToken() {
         String token = HashUtil.generateToken();
         tokens.put(token, System.currentTimeMillis());
         return token;
     }
-    
+
     /**
-     * 验证 token
+     * Validate token. Strips "Bearer " prefix if present.
      */
     public boolean validateToken(String token) {
         if (token == null || token.isEmpty()) {
             return false;
         }
-        
-        Long createdAt = tokens.get(token);
+
+        String actualToken = token;
+        if (actualToken.startsWith("Bearer ")) {
+            actualToken = actualToken.substring(7);
+        }
+
+        Long createdAt = tokens.get(actualToken);
         if (createdAt == null) {
             return false;
         }
-        
-        // 检查是否过期
+
         if (System.currentTimeMillis() - createdAt > TOKEN_EXPIRY_MS) {
-            tokens.remove(token);
+            tokens.remove(actualToken);
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
-     * 使 token 失效
+     * Invalidate token
      */
     public void invalidateToken(String token) {
         tokens.remove(token);
     }
-    
+
     /**
-     * 从请求中验证
+     * Validate request from a Ktor ApplicationCall by extracting the Authorization header.
      */
     public boolean validateRequest(ApplicationCall call) {
-        String authHeader = call.request.headers["Authorization"];
-        
+        String authHeader = call.getRequest().getHeaders().get("Authorization");
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return false;
         }
-        
+
         String token = authHeader.substring(7);
         return validateToken(token);
     }
-    
+
     /**
-     * WebAuthn 是否启用
+     * Validate a request given a raw Authorization header value (e.g. "Bearer xxx").
+     */
+    public boolean validateRequest(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+
+        String token = authHeader.substring(7);
+        return validateToken(token);
+    }
+
+    /**
+     * Whether WebAuthn is enabled
      */
     public boolean isWebauthnEnabled() {
         return config.getAuth().isWebauthnEnabled();

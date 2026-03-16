@@ -34,16 +34,16 @@ public class WebAuthnManager {
         
         // 返回 PublicKeyCredentialCreationOptions
         Map<String, Object> options = new LinkedHashMap<>();
-        options.put("rp", Map.of("id", RP_ID, "name", RP_NAME));
-        options.put("user", Map.of(
+        options.put("rp", createMap("id", RP_ID, "name", RP_NAME));
+        options.put("user", createMap(
             "id", Base64.getEncoder().encodeToString(username.getBytes()),
             "name", username,
             "displayName", username
         ));
         options.put("challenge", Base64.getUrlEncoder().withoutPadding().encodeToString(challenge));
         options.put("pubKeyCredParams", Arrays.asList(
-            Map.of("type", "public-key", "alg", -7),   // ES256
-            Map.of("type", "public-key", "alg", -257)  // RS256
+            createMap("type", "public-key", "alg", -7),   // ES256
+            createMap("type", "public-key", "alg", -257)  // RS256
         ));
         options.put("timeout", 60000);
         options.put("challengeId", challengeId);
@@ -102,7 +102,7 @@ public class WebAuthnManager {
         List<Map<String, Object>> allowCredentials = new ArrayList<>();
         for (WebAuthnCredential cred : credentials.values()) {
             if (cred.username.equals(username)) {
-                allowCredentials.add(Map.of(
+                allowCredentials.add(createMap(
                     "type", "public-key",
                     "id", cred.credentialId,
                     "transports", Arrays.asList("internal", "usb", "nfc", "ble")
@@ -180,7 +180,7 @@ public class WebAuthnManager {
         List<Map<String, Object>> result = new ArrayList<>();
         for (WebAuthnCredential cred : credentials.values()) {
             if (cred.username.equals(username)) {
-                result.add(Map.of(
+                result.add(createMap(
                     "id", cred.credentialId,
                     "type", cred.type,
                     "createdAt", cred.createdAt
@@ -228,5 +228,14 @@ public class WebAuthnManager {
             this.type = type;
             this.createdAt = createdAt;
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static <K, V> Map<K, V> createMap(Object... keyValues) {
+        Map<K, V> map = new LinkedHashMap<>();
+        for (int i = 0; i < keyValues.length; i += 2) {
+            map.put((K) keyValues[i], (V) keyValues[i + 1]);
+        }
+        return map;
     }
 }

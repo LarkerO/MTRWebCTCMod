@@ -1,11 +1,11 @@
-package cn.bg7qvu.mtrwebctc.middleware;
+package cn.bg7qvu.mtrwebctc.middleware
 
-import cn.bg7qvu.mtrwebctc.security.RateLimiter;
-import cn.bg7qvu.mtrwebctc.util.Logger;
+import cn.bg7qvu.mtrwebctc.security.RateLimiter
+import cn.bg7qvu.mtrwebctc.util.Logger
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.http.*
-import io.ktor.util.*
 
 /**
  * 速率限制中间件
@@ -17,10 +17,10 @@ public class RateLimitMiddleware(private val rateLimiter: RateLimiter) {
             val clientIp = call.request.origin.remoteHost
             
             if (!rateLimiter.allowRequest(clientIp)) {
-                val retryAfter = rateLimiter.getResetTime(clientIp) - System.currentTimeMillis()
+                val retryAfter = rateLimiter.getResetTime(clientIp)
                 
                 call.response.headers.append(
-                    HttpHeaders.RETRY_AFTER,
+                    "Retry-After",
                     (retryAfter / 1000).toString()
                 )
                 
@@ -35,10 +35,8 @@ public class RateLimitMiddleware(private val rateLimiter: RateLimiter) {
                 )
                 finish()
             } else {
-                // 添加速率限制头
                 call.response.headers.apply {
-                    append("X-RateLimit-Limit", rateLimiter.getStats()["max_requests"].toString())
-                    append("X-RateLimit-Remaining", rateLimiter.getRemainingQuota(clientIp).toString())
+                    append("X-RateLimit-Remaining", rateLimiter.getRemainingRequests(clientIp).toString())
                     append("X-RateLimit-Reset", rateLimiter.getResetTime(clientIp).toString())
                 }
             }

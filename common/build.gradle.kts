@@ -3,6 +3,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 plugins {
     id("java")
     id("java-library")
+    kotlin("jvm") version "1.9.22"
 }
 
 repositories {
@@ -23,6 +24,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:2.3.9")
     implementation("io.ktor:ktor-serialization-gson:2.3.9")
     implementation("io.ktor:ktor-server-cors:2.3.9")
+    implementation("io.ktor:ktor-server-status-pages:2.3.9")
     
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
@@ -38,4 +40,8 @@ java {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.release.set(8)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
 }
