@@ -32,7 +32,7 @@ tasks.register("downloadArchitecturyJar") {
         if (!targetFile.exists() || targetFile.length() == 0L) {
             val url = "https://maven.architectury.dev/dev/architectury/architectury/$architecturyVersion/$architecturyJarFileName"
             logger.lifecycle("Downloading Architectury API jar from $url")
-            java.net.URL(url).openStream().use { input ->
+            URL(url).openStream().use { input ->
                 targetFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
@@ -52,7 +52,7 @@ tasks.register("downloadArchitecturyJar1165") {
         if (!targetFile.exists() || targetFile.length() == 0L) {
             val url = "https://maven.architectury.dev/me/shedaniel/architectury/$architecturyVersion1165/$architecturyJarFileName1165"
             logger.lifecycle("Downloading Architectury API jar from $url")
-            java.net.URL(url).openStream().use { input ->
+            URL(url).openStream().use { input ->
                 targetFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
